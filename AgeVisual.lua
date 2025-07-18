@@ -22,6 +22,7 @@ local BUTTON_GREEN_HOVER = Color3.fromRGB(120, 230, 120)
 local FONT = Enum.Font.FredokaOne
 local TILE_IMAGE = "rbxassetid://15910695828"
 
+-- Flexible, case/space/dash-insensitive patterns for pet name
 local validPets = {
     "raccoon",
     "t[%s%-]*rex", -- t rex, t-rex, t   rex, etc
@@ -32,8 +33,21 @@ local validPets = {
     "mimic[%s%-]*octopus",
     "spinosaurus",
     "queen[%s%-]*bee",
-    "spinosaurus"
+    "praying[%s%-]*mantis",
+    "blood[%s%-]*owl"
 }
+
+-- Robust tool validation using patterns (case/space/dash insensitive, substring match)
+local function toolIsValidPet(tool)
+    local toolName = string.lower(tool.Name or "")
+    for _, pattern in ipairs(validPets) do
+        local ok, res = pcall(function()
+            return string.match(toolName, pattern)
+        end)
+        if ok and res then return true end
+    end
+    return false
+end
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "PetLevelWoodUI"
@@ -490,73 +504,55 @@ end
 infoBtn.MouseButton1Click:Connect(showInfoModal)
 
 levelUpBtn.MouseButton1Click:Connect(function()
-    local success, err = pcall(function()
-        local char
-        local charSuccess, charErr = pcall(function()
-            char = localPlayer.Character or localPlayer.CharacterAdded:Wait(10)
-        end)
-        if not charSuccess or not char then
-            notificationLabel.Text = "Error: Character not loaded"
-            wait(3)
+    local char = localPlayer.Character or localPlayer.CharacterAdded:Wait(10)
+    if not char then
+        notificationLabel.Text = "Error: Character not loaded"
+        wait(3)
+        notificationLabel.Text = ""
+        return
+    end
+
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool then
+        local isValidPet = toolIsValidPet(tool)
+        if isValidPet then
             notificationLabel.Text = ""
-            return
-        end
+            mainFrame.Visible = false
 
-        local tool = char:FindFirstChildOfClass("Tool")
-        if tool then
-            -- Flexible, case-insensitive, dash/space-insensitive pet check
-            local toolName = string.lower(tool.Name)
-            local isValidPet = false
-            for _, petPattern in ipairs(validPets) do
-                if string.match(toolName, petPattern) then
-                    isValidPet = true
-                    break
+            local currentWeight = 0
+            local currentAge = 0
+            local weightMatch = string.match(tool.Name, "%[(.-) KG%]")
+            local ageMatch = string.match(tool.Name, "%[Age (.-)%]")
+            if weightMatch then currentWeight = tonumber(weightMatch) or 0 end
+            if ageMatch then currentAge = tonumber(ageMatch) or 0 end
+
+            local newWeight = tonumber(string.format("%.2f", currentWeight + 5))
+            local basePetName = string.match(tool.Name, "^(.-) %[")
+            if not basePetName then basePetName = tool.Name end
+
+            -- Animate age one by one, with notification
+            local function doNextAge(age)
+                if age > 50 then
+                    mainFrame.Visible = true
+                    notificationLabel.Text = "Pet leveled up to Age 50!"
+                    wait(2)
+                    notificationLabel.Text = ""
+                    return
                 end
+                miniLoading("Leveling Up Age: " .. age, function()
+                    tool.Name = basePetName .. " [" .. newWeight .. " KG] [Age " .. age .. "]"
+                    showAgeNotification(age)
+                    doNextAge(age + 1)
+                end)
             end
-            if isValidPet then
-                notificationLabel.Text = ""
-                mainFrame.Visible = false
-
-                local currentWeight = 0
-                local currentAge = 0
-                local weightMatch = string.match(tool.Name, "%[(.-) KG%]")
-                local ageMatch = string.match(tool.Name, "%[Age (.-)%]")
-                if weightMatch then currentWeight = tonumber(weightMatch) or 0 end
-                if ageMatch then currentAge = tonumber(ageMatch) or 0 end
-
-                local newWeight = tonumber(string.format("%.2f", currentWeight + 5))
-                local basePetName = string.match(tool.Name, "^(.-) %[")
-                if not basePetName then basePetName = tool.Name end
-
-                -- Animate age one by one, with notification
-                local function doNextAge(age)
-                    if age > 50 then
-                        mainFrame.Visible = true
-                        notificationLabel.Text = "Pet leveled up to Age 50!"
-                        wait(2)
-                        notificationLabel.Text = ""
-                        return
-                    end
-                    miniLoading("Leveling Up Age: " .. age, function()
-                        tool.Name = basePetName .. " [" .. newWeight .. " KG] [Age " .. age .. "]"
-                        showAgeNotification(age)
-                        doNextAge(age + 1)
-                    end)
-                end
-                doNextAge(currentAge + 1)
-            else
-                notificationLabel.Text = "Please equip a valid pet"
-                wait(3)
-                notificationLabel.Text = ""
-            end
+            doNextAge(currentAge + 1)
         else
             notificationLabel.Text = "Please equip a valid pet"
             wait(3)
             notificationLabel.Text = ""
         end
-    end)
-    if not success then
-        notificationLabel.Text = "Error leveling up pet"
+    else
+        notificationLabel.Text = "Please equip a valid pet"
         wait(3)
         notificationLabel.Text = ""
     end
