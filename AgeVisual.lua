@@ -1,4 +1,3 @@
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
@@ -22,10 +21,9 @@ local BUTTON_GREEN_HOVER = Color3.fromRGB(120, 230, 120)
 local FONT = Enum.Font.FredokaOne
 local TILE_IMAGE = "rbxassetid://15910695828"
 
--- Flexible, case/space/dash-insensitive patterns for pet name
 local validPets = {
     "raccoon",
-    "t[%s%-]*rex", -- t rex, t-rex, t   rex, etc
+    "t[%s%-]*rex",
     "fennec[%s%-]*fox",
     "dragonfly",
     "butterfly",
@@ -36,15 +34,13 @@ local validPets = {
     "praying[%s%-]*mantis",
     "blood[%s%-]*owl"
 }
-
--- Robust tool validation using patterns (case/space/dash insensitive, substring match)
 local function toolIsValidPet(tool)
-    local toolName = string.lower(tool.Name or "")
-    for _, pattern in ipairs(validPets) do
-        local ok, res = pcall(function()
-            return string.match(toolName, pattern)
+    local name = string.lower(tool.Name or "")
+    for _, pat in ipairs(validPets) do
+        local ok, found = pcall(function()
+            return string.match(name, pat)
         end)
-        if ok and res then return true end
+        if ok and found then return true end
     end
     return false
 end
@@ -52,7 +48,7 @@ end
 local gui = Instance.new("ScreenGui")
 gui.Name = "PetLevelWoodUI"
 gui.IgnoreGuiInset = true
-gui.Parent = gethui and gethui() or (syn and syn.protect_gui and syn.protect_gui(game.CoreGui)) or game.CoreGui
+gui.Parent = game.CoreGui -- safest, works on all executors
 
 gui.AncestryChanged:Connect(function()
     if not gui:IsDescendantOf(game) then
@@ -69,20 +65,19 @@ gui.AncestryChanged:Connect(function()
     end
 end)
 
-local mainFrame = Instance.new("Frame")
+local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0, 260, 0, 140)
 mainFrame.Position = UDim2.new(0.5, -130, 0.5, -70)
 mainFrame.BackgroundColor3 = BROWN_BG
 mainFrame.Active = true
 mainFrame.Draggable = true
-mainFrame.Parent = gui
 local frameCorner = Instance.new("UICorner", mainFrame)
 frameCorner.CornerRadius = UDim.new(0, 10)
 local frameStroke = Instance.new("UIStroke", mainFrame)
 frameStroke.Thickness = 2
 frameStroke.Color = BROWN_BORDER
 
-local brownTexture = Instance.new("ImageLabel")
+local brownTexture = Instance.new("ImageLabel", mainFrame)
 brownTexture.Size = UDim2.new(1, 0, 1, 0)
 brownTexture.Position = UDim2.new(0, 0, 0, 0)
 brownTexture.BackgroundTransparency = 1
@@ -91,17 +86,15 @@ brownTexture.ImageTransparency = 0
 brownTexture.ScaleType = Enum.ScaleType.Tile
 brownTexture.TileSize = UDim2.new(0, 96, 0, 96)
 brownTexture.ZIndex = 1
-brownTexture.Parent = mainFrame
 
-local topBar = Instance.new("Frame")
+local topBar = Instance.new("Frame", mainFrame)
 topBar.Size = UDim2.new(1, 0, 0, 32)
 topBar.BackgroundColor3 = ACCENT_GREEN
 topBar.BorderSizePixel = 0
-topBar.Parent = mainFrame
 local topBarCorner = Instance.new("UICorner", topBar)
 topBarCorner.CornerRadius = UDim.new(0, 10)
 
-local greenTexture = Instance.new("ImageLabel")
+local greenTexture = Instance.new("ImageLabel", topBar)
 greenTexture.Size = UDim2.new(1, 0, 1, 0)
 greenTexture.Position = UDim2.new(0, 0, 0, 0)
 greenTexture.BackgroundTransparency = 1
@@ -110,9 +103,8 @@ greenTexture.ImageTransparency = 0
 greenTexture.ScaleType = Enum.ScaleType.Tile
 greenTexture.TileSize = UDim2.new(0, 96, 0, 96)
 greenTexture.ZIndex = 2
-greenTexture.Parent = topBar
 
-local topLabel = Instance.new("TextLabel")
+local topLabel = Instance.new("TextLabel", topBar)
 topLabel.Size = UDim2.new(1, -64, 1, 0)
 topLabel.Position = UDim2.new(0, 12, 0, 0)
 topLabel.BackgroundTransparency = 1
@@ -123,9 +115,8 @@ topLabel.TextStrokeTransparency = 0
 topLabel.TextScaled = true
 topLabel.TextXAlignment = Enum.TextXAlignment.Left
 topLabel.ZIndex = 10
-topLabel.Parent = topBar
 
-local infoBtn = Instance.new("TextButton")
+local infoBtn = Instance.new("TextButton", topBar)
 infoBtn.Size = UDim2.new(0, 18, 0, 18)
 infoBtn.Position = UDim2.new(1, -50, 0.5, -9)
 infoBtn.BackgroundColor3 = BUTTON_GRAY
@@ -134,19 +125,14 @@ infoBtn.Font = FONT
 infoBtn.TextColor3 = Color3.fromRGB(65, 65, 65)
 infoBtn.TextScaled = true
 infoBtn.TextStrokeTransparency = 0.1
-infoBtn.Parent = topBar
 infoBtn.ZIndex = 11
 local infoStroke = Instance.new("UIStroke", infoBtn)
 infoStroke.Color = Color3.fromRGB(120,120,120)
 infoStroke.Thickness = 1
-infoBtn.MouseEnter:Connect(function()
-    infoBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
-end)
-infoBtn.MouseLeave:Connect(function()
-    infoBtn.BackgroundColor3 = BUTTON_GRAY
-end)
+infoBtn.MouseEnter:Connect(function() infoBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220) end)
+infoBtn.MouseLeave:Connect(function() infoBtn.BackgroundColor3 = BUTTON_GRAY end)
 
-local closeBtn = Instance.new("TextButton")
+local closeBtn = Instance.new("TextButton", topBar)
 closeBtn.Size = UDim2.new(0, 18, 0, 18)
 closeBtn.Position = UDim2.new(1, -25, 0.5, -9)
 closeBtn.BackgroundColor3 = BUTTON_RED
@@ -155,30 +141,22 @@ closeBtn.Font = FONT
 closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 closeBtn.TextScaled = true
 closeBtn.TextStrokeTransparency = 0.3
-closeBtn.Parent = topBar
 closeBtn.ZIndex = 11
 local closeStroke = Instance.new("UIStroke", closeBtn)
 closeStroke.Color = Color3.fromRGB(107, 0, 0)
 closeStroke.Thickness = 1
-closeBtn.MouseEnter:Connect(function()
-    closeBtn.BackgroundColor3 = BROWN_LIGHT
-end)
-closeBtn.MouseLeave:Connect(function()
-    closeBtn.BackgroundColor3 = BUTTON_RED
-end)
-closeBtn.MouseButton1Click:Connect(function()
-    gui:Destroy()
-end)
+closeBtn.MouseEnter:Connect(function() closeBtn.BackgroundColor3 = BROWN_LIGHT end)
+closeBtn.MouseLeave:Connect(function() closeBtn.BackgroundColor3 = BUTTON_RED end)
+closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
-local contentFrame = Instance.new("Frame")
+local contentFrame = Instance.new("Frame", mainFrame)
 contentFrame.Name = "ContentFrame"
 contentFrame.Size = UDim2.new(1, -8, 1, -38)
 contentFrame.Position = UDim2.new(0, 4, 0, 36)
 contentFrame.BackgroundTransparency = 1
 contentFrame.ZIndex = 2
-contentFrame.Parent = mainFrame
 
-local notificationLabel = Instance.new("TextLabel")
+local notificationLabel = Instance.new("TextLabel", contentFrame)
 notificationLabel.Name = "NotificationLabel"
 notificationLabel.Size = UDim2.new(0.92, 0, 0, 20)
 notificationLabel.Position = UDim2.new(0.04, 0, 0, 0)
@@ -190,11 +168,10 @@ notificationLabel.TextStrokeTransparency = 0.3
 notificationLabel.TextScaled = true
 notificationLabel.TextXAlignment = Enum.TextXAlignment.Center
 notificationLabel.ZIndex = 5
-notificationLabel.Parent = contentFrame
 
--- Age Notification Popup (centered, fades out)
+-- Age Notification Popup
 local function showAgeNotification(age)
-    local notif = Instance.new("TextLabel")
+    local notif = Instance.new("TextLabel", mainFrame)
     notif.Size = UDim2.new(0, 120, 0, 36)
     notif.Position = UDim2.new(0.5, -60, 0, 60)
     notif.BackgroundTransparency = 0.12
@@ -205,13 +182,11 @@ local function showAgeNotification(age)
     notif.TextStrokeTransparency = 0.12
     notif.TextScaled = true
     notif.AnchorPoint = Vector2.new(0,0)
-    notif.Parent = mainFrame
     local notifCorner = Instance.new("UICorner", notif)
     notifCorner.CornerRadius = UDim.new(0, 10)
     local notifStroke = Instance.new("UIStroke", notif)
     notifStroke.Color = Color3.fromRGB(70,140,60)
     notifStroke.Thickness = 1
-
     spawn(function()
         wait(1.1)
         local t = TweenService:Create(notif, TweenInfo.new(0.6), {TextTransparency=1, BackgroundTransparency=1, TextStrokeTransparency=1})
@@ -221,8 +196,9 @@ local function showAgeNotification(age)
     end)
 end
 
+-- Styled button
 local function makeStyledButton(parent, text, yPos, color, hover)
-    local btn = Instance.new("TextButton")
+    local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(0.9, 0, 0, 28)
     btn.Position = UDim2.new(0.05, 0, 0, yPos)
     btn.BackgroundColor3 = color
@@ -232,24 +208,19 @@ local function makeStyledButton(parent, text, yPos, color, hover)
     btn.TextScaled = true
     btn.TextStrokeTransparency = 0.25
     btn.ZIndex = 2
-    btn.Parent = parent
     local btnCorner = Instance.new("UICorner", btn)
     btnCorner.CornerRadius = UDim.new(0, 7)
     local btnStroke = Instance.new("UIStroke", btn)
     btnStroke.Color = BROWN_BORDER
     btnStroke.Thickness = 1
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = hover
-    end)
-    btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = color
-    end)
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = hover end)
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = color end)
     return btn
 end
 
 local levelUpBtn = makeStyledButton(contentFrame, "Level Up 50 Instantly", 26, BUTTON_GREEN, BUTTON_GREEN_HOVER)
 
-local credit = Instance.new("TextLabel")
+local credit = Instance.new("TextLabel", contentFrame)
 credit.Name = "Credit"
 credit.Size = UDim2.new(1, -10, 0, 16)
 credit.Position = UDim2.new(0, 5, 1, -18)
@@ -260,24 +231,20 @@ credit.Font = FONT
 credit.TextColor3 = Color3.fromRGB(255, 255, 255)
 credit.TextTransparency = 0.3
 credit.TextStrokeTransparency = 0.8
-credit.Parent = contentFrame
 
--- Mini Loading Modal (Wood/Brown Style), now with custom text
+-- Mini Loading Modal (Brown Style)
 local function miniLoading(customText, callback)
-    local parentGui = gui or game:GetService("CoreGui")
-    local miniGui = Instance.new("ScreenGui")
+    local miniGui = Instance.new("ScreenGui", gui)
     miniGui.Name = "MiniLoading"
     miniGui.IgnoreGuiInset = true
-    miniGui.Parent = parentGui
 
-    local miniFrame = Instance.new("Frame")
+    local miniFrame = Instance.new("Frame", miniGui)
     miniFrame.Size = UDim2.new(0, 240, 0, 80)
     miniFrame.Position = UDim2.new(0.5, -120, 0.5, -40)
     miniFrame.BackgroundColor3 = BROWN_BG
     miniFrame.BackgroundTransparency = 0
     miniFrame.BorderSizePixel = 0
     miniFrame.Visible = true
-    miniFrame.Parent = miniGui
 
     local miniCorner = Instance.new("UICorner", miniFrame)
     miniCorner.CornerRadius = UDim.new(0, 10)
@@ -285,7 +252,7 @@ local function miniLoading(customText, callback)
     frameStroke.Thickness = 2
     frameStroke.Color = BROWN_BORDER
 
-    local brownTexture = Instance.new("ImageLabel")
+    local brownTexture = Instance.new("ImageLabel", miniFrame)
     brownTexture.Size = UDim2.new(1, 0, 1, 0)
     brownTexture.Position = UDim2.new(0, 0, 0, 0)
     brownTexture.BackgroundTransparency = 1
@@ -294,18 +261,16 @@ local function miniLoading(customText, callback)
     brownTexture.ScaleType = Enum.ScaleType.Tile
     brownTexture.TileSize = UDim2.new(0, 96, 0, 96)
     brownTexture.ZIndex = 1
-    brownTexture.Parent = miniFrame
 
-    local topBar = Instance.new("Frame")
+    local topBar = Instance.new("Frame", miniFrame)
     topBar.Size = UDim2.new(1, 0, 0, 22)
     topBar.Position = UDim2.new(0, 0, 0, 0)
     topBar.BackgroundColor3 = ACCENT_GREEN
     topBar.ZIndex = 5
-    topBar.Parent = miniFrame
     local topBarCorner = Instance.new("UICorner", topBar)
     topBarCorner.CornerRadius = UDim.new(0, 10)
 
-    local greenTexture = Instance.new("ImageLabel")
+    local greenTexture = Instance.new("ImageLabel", topBar)
     greenTexture.Size = UDim2.new(1, 0, 1, 0)
     greenTexture.Position = UDim2.new(0, 0, 0, 0)
     greenTexture.BackgroundTransparency = 1
@@ -314,9 +279,8 @@ local function miniLoading(customText, callback)
     greenTexture.ScaleType = Enum.ScaleType.Tile
     greenTexture.TileSize = UDim2.new(0, 96, 0, 96)
     greenTexture.ZIndex = 6
-    greenTexture.Parent = topBar
 
-    local topLabel = Instance.new("TextLabel")
+    local topLabel = Instance.new("TextLabel", topBar)
     topLabel.Size = UDim2.new(1, -12, 1, 0)
     topLabel.Position = UDim2.new(0, 6, 0, 0)
     topLabel.BackgroundTransparency = 1
@@ -327,9 +291,8 @@ local function miniLoading(customText, callback)
     topLabel.TextScaled = true
     topLabel.TextXAlignment = Enum.TextXAlignment.Left
     topLabel.ZIndex = 7
-    topLabel.Parent = topBar
 
-    local progress = Instance.new("TextLabel")
+    local progress = Instance.new("TextLabel", miniFrame)
     progress.Size = UDim2.new(1, -24, 0, 28)
     progress.Position = UDim2.new(0, 12, 0, 26)
     progress.BackgroundTransparency = 1
@@ -340,26 +303,23 @@ local function miniLoading(customText, callback)
     progress.TextScaled = true
     progress.TextTransparency = 0
     progress.ZIndex = 2
-    progress.Parent = miniFrame
 
-    local barBG = Instance.new("Frame")
+    local barBG = Instance.new("Frame", miniFrame)
     barBG.Size = UDim2.new(0.8, 0, 0, 16)
     barBG.Position = UDim2.new(0.1, 0, 1, -24)
     barBG.BackgroundColor3 = BROWN_LIGHT
     barBG.BorderSizePixel = 0
     barBG.ZIndex = 3
-    barBG.Parent = miniFrame
     local barBGCorner = Instance.new("UICorner", barBG)
     barBGCorner.CornerRadius = UDim.new(0, 6)
     local barBGStroke = Instance.new("UIStroke", barBG)
     barBGStroke.Color = BROWN_BORDER
     barBGStroke.Thickness = 1
 
-    local barFill = Instance.new("Frame")
+    local barFill = Instance.new("Frame", barBG)
     barFill.BackgroundColor3 = ACCENT_GREEN
     barFill.Size = UDim2.new(0,0,1,0)
     barFill.ZIndex = 4
-    barFill.Parent = barBG
     local barFillCorner = Instance.new("UICorner", barFill)
     barFillCorner.CornerRadius = UDim.new(0, 6)
 
@@ -377,10 +337,9 @@ end
 
 local function showInfoModal()
     if gui:FindFirstChild("InfoModal") then return end
-    local blur = Instance.new("BlurEffect")
+    local blur = Instance.new("BlurEffect", Lighting)
     blur.Size = 16
     blur.Name = "ModalBlur"
-    blur.Parent = Lighting
 
     if camera and not isZoomed then
         if currentTween then currentTween:Cancel() end
@@ -391,21 +350,20 @@ local function showInfoModal()
         isZoomed = true
     end
 
-    local modal = Instance.new("Frame")
+    local modal = Instance.new("Frame", gui)
     modal.Name = "InfoModal"
     modal.Size = UDim2.new(0, 220, 0, 110)
     modal.Position = UDim2.new(0.5, -110, 0.5, -55)
     modal.BackgroundColor3 = BROWN_LIGHT
     modal.Active = true
     modal.ZIndex = 30
-    modal.Parent = gui
     local modalCorner = Instance.new("UICorner", modal)
     modalCorner.CornerRadius = UDim.new(0, 8)
     local modalStroke = Instance.new("UIStroke", modal)
     modalStroke.Color = BROWN_BORDER
     modalStroke.Thickness = 2
 
-    local modalTexture = Instance.new("ImageLabel")
+    local modalTexture = Instance.new("ImageLabel", modal)
     modalTexture.Name = "ModalBrownTexture"
     modalTexture.Size = UDim2.new(1, 0, 1, 0)
     modalTexture.Position = UDim2.new(0, 0, 0, 0)
@@ -415,18 +373,16 @@ local function showInfoModal()
     modalTexture.ScaleType = Enum.ScaleType.Tile
     modalTexture.TileSize = UDim2.new(0, 96, 0, 96)
     modalTexture.ZIndex = 30
-    modalTexture.Parent = modal
 
-    local textTile = Instance.new("Frame")
+    local textTile = Instance.new("Frame", modal)
     textTile.Size = UDim2.new(1, 0, 0, 18)
     textTile.Position = UDim2.new(0, 0, 0, 0)
     textTile.BackgroundColor3 = ACCENT_GREEN
     textTile.ZIndex = 32
-    textTile.Parent = modal
     local textTileCorner = Instance.new("UICorner", textTile)
     textTileCorner.CornerRadius = UDim.new(0, 8)
 
-    local textTileLabel = Instance.new("TextLabel")
+    local textTileLabel = Instance.new("TextLabel", textTile)
     textTileLabel.Size = UDim2.new(1, -20, 1, 0)
     textTileLabel.Position = UDim2.new(0, 8, 0, 0)
     textTileLabel.BackgroundTransparency = 1
@@ -436,9 +392,8 @@ local function showInfoModal()
     textTileLabel.TextScaled = true
     textTileLabel.ZIndex = 33
     textTileLabel.TextStrokeTransparency = 0
-    textTileLabel.Parent = textTile
 
-    local closeBtn2 = Instance.new("TextButton")
+    local closeBtn2 = Instance.new("TextButton", textTile)
     closeBtn2.Size = UDim2.new(0, 16, 0, 16)
     closeBtn2.Position = UDim2.new(1, -18, 0, 1)
     closeBtn2.BackgroundColor3 = BUTTON_RED
@@ -447,16 +402,11 @@ local function showInfoModal()
     closeBtn2.TextScaled = true
     closeBtn2.Font = FONT
     closeBtn2.ZIndex = 34
-    closeBtn2.Parent = textTile
     local closeStroke2 = Instance.new("UIStroke", closeBtn2)
     closeStroke2.Color = Color3.fromRGB(107, 0, 0)
     closeStroke2.Thickness = 2
-    closeBtn2.MouseEnter:Connect(function()
-        closeBtn2.BackgroundColor3 = Color3.fromRGB(200, 62, 62)
-    end)
-    closeBtn2.MouseLeave:Connect(function()
-        closeBtn2.BackgroundColor3 = BUTTON_RED
-    end)
+    closeBtn2.MouseEnter:Connect(function() closeBtn2.BackgroundColor3 = Color3.fromRGB(200, 62, 62) end)
+    closeBtn2.MouseLeave:Connect(function() closeBtn2.BackgroundColor3 = BUTTON_RED end)
     closeBtn2.MouseButton1Click:Connect(function()
         if blur then blur:Destroy() end
         if modal then modal:Destroy() end
@@ -470,14 +420,12 @@ local function showInfoModal()
         end
     end)
 
-    local infoBox = Instance.new("Frame")
+    local infoBox = Instance.new("Frame", modal)
     infoBox.Size = UDim2.new(1, -10, 1, -21)
     infoBox.Position = UDim2.new(0, 5, 0, 16)
     infoBox.BackgroundColor3 = Color3.fromRGB(196, 164, 132)
     infoBox.BackgroundTransparency = 0
     infoBox.ZIndex = 30
-    infoBox.Parent = modal
-
     local infoBoxCorner = Instance.new("UICorner", infoBox)
     infoBoxCorner.CornerRadius = UDim.new(0, 7)
 
@@ -487,7 +435,7 @@ local function showInfoModal()
         ColorSequenceKeypoint.new(1, Color3.fromRGB(85, 43, 18))
     }
 
-    local infoLabel = Instance.new("TextLabel")
+    local infoLabel = Instance.new("TextLabel", infoBox)
     infoLabel.Size = UDim2.new(1, 0, 1, 0)
     infoLabel.Position = UDim2.new(0, 0, 0, 0)
     infoLabel.BackgroundTransparency = 1
@@ -498,13 +446,12 @@ local function showInfoModal()
     infoLabel.TextScaled = true
     infoLabel.ZIndex = 31
     infoLabel.TextStrokeTransparency = 0.5
-    infoLabel.Parent = infoBox
 end
 
 infoBtn.MouseButton1Click:Connect(showInfoModal)
 
 levelUpBtn.MouseButton1Click:Connect(function()
-    local char = localPlayer.Character or localPlayer.CharacterAdded:Wait(10)
+    local char = localPlayer.Character or localPlayer.CharacterAdded:Wait()
     if not char then
         notificationLabel.Text = "Error: Character not loaded"
         wait(3)
@@ -527,10 +474,8 @@ levelUpBtn.MouseButton1Click:Connect(function()
             if ageMatch then currentAge = tonumber(ageMatch) or 0 end
 
             local newWeight = tonumber(string.format("%.2f", currentWeight + 5))
-            local basePetName = string.match(tool.Name, "^(.-) %[")
-            if not basePetName then basePetName = tool.Name end
+            local basePetName = string.match(tool.Name, "^(.-) %[") or tool.Name
 
-            -- Animate age one by one, with notification
             local function doNextAge(age)
                 if age > 50 then
                     mainFrame.Visible = true
