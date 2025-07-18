@@ -1,27 +1,30 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Lighting = game:GetService("Lighting")
-local camera = workspace.CurrentCamera
-local localPlayer = Players.LocalPlayer
+-- Pet Level Up UI (Wood Style) - Case/Space/Dash Insensitive Flexible Pet Name Check
+-- All variables/functions are uniquely prefixed to avoid conflict when embedded in other scripts
 
-local originalFOV = camera and camera.FieldOfView or 70
-local isZoomed = false
-local zoomFOV = 60
-local tweenTime = 0.4
-local currentTween
+local PLU_Players = game:GetService("Players")
+local PLU_TweenService = game:GetService("TweenService")
+local PLU_Lighting = game:GetService("Lighting")
+local PLU_camera = workspace.CurrentCamera
+local PLU_localPlayer = PLU_Players.LocalPlayer
 
-local BROWN_BG = Color3.fromRGB(118, 61, 25)
-local BROWN_LIGHT = Color3.fromRGB(164, 97, 43)
-local BROWN_BORDER = Color3.fromRGB(51, 25, 0)
-local ACCENT_GREEN = Color3.fromRGB(110, 196, 99)
-local BUTTON_RED = Color3.fromRGB(255, 62, 62)
-local BUTTON_GRAY = Color3.fromRGB(190, 190, 190)
-local BUTTON_GREEN = Color3.fromRGB(85, 200, 85)
-local BUTTON_GREEN_HOVER = Color3.fromRGB(120, 230, 120)
-local FONT = Enum.Font.FredokaOne
-local TILE_IMAGE = "rbxassetid://15910695828"
+local PLU_originalFOV = PLU_camera and PLU_camera.FieldOfView or 70
+local PLU_isZoomed = false
+local PLU_zoomFOV = 60
+local PLU_tweenTime = 0.4
+local PLU_currentTween
 
-local validPets = {
+local PLU_BROWN_BG = Color3.fromRGB(118, 61, 25)
+local PLU_BROWN_LIGHT = Color3.fromRGB(164, 97, 43)
+local PLU_BROWN_BORDER = Color3.fromRGB(51, 25, 0)
+local PLU_ACCENT_GREEN = Color3.fromRGB(110, 196, 99)
+local PLU_BUTTON_RED = Color3.fromRGB(255, 62, 62)
+local PLU_BUTTON_GRAY = Color3.fromRGB(190, 190, 190)
+local PLU_BUTTON_GREEN = Color3.fromRGB(85, 200, 85)
+local PLU_BUTTON_GREEN_HOVER = Color3.fromRGB(120, 230, 120)
+local PLU_FONT = Enum.Font.FredokaOne
+local PLU_TILE_IMAGE = "rbxassetid://15910695828"
+
+local PLU_validPets = {
     "raccoon",
     "t[%s%-]*rex",
     "fennec[%s%-]*fox",
@@ -34,9 +37,9 @@ local validPets = {
     "praying[%s%-]*mantis",
     "blood[%s%-]*owl"
 }
-local function toolIsValidPet(tool)
+local function PLU_toolIsValidPet(tool)
     local name = string.lower(tool.Name or "")
-    for _, pat in ipairs(validPets) do
+    for _, pat in ipairs(PLU_validPets) do
         local ok, found = pcall(function()
             return string.match(name, pat)
         end)
@@ -45,139 +48,138 @@ local function toolIsValidPet(tool)
     return false
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "PetLevelWoodUI"
-gui.IgnoreGuiInset = true
-gui.Parent = game.CoreGui -- safest, works on all executors
+local PLU_gui = Instance.new("ScreenGui")
+PLU_gui.Name = "PetLevelWoodUI_"..tostring(math.random(100000,999999))
+PLU_gui.IgnoreGuiInset = true
+PLU_gui.Parent = game.CoreGui
 
-gui.AncestryChanged:Connect(function()
-    if not gui:IsDescendantOf(game) then
-        local blur = Lighting:FindFirstChild("ModalBlur")
+PLU_gui.AncestryChanged:Connect(function()
+    if not PLU_gui:IsDescendantOf(game) then
+        local blur = PLU_Lighting:FindFirstChild("ModalBlur")
         if blur then blur:Destroy() end
-        if camera and isZoomed then
-            if currentTween then currentTween:Cancel() end
-            currentTween = TweenService:Create(camera, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                FieldOfView = originalFOV
+        if PLU_camera and PLU_isZoomed then
+            if PLU_currentTween then PLU_currentTween:Cancel() end
+            PLU_currentTween = PLU_TweenService:Create(PLU_camera, TweenInfo.new(PLU_tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                FieldOfView = PLU_originalFOV
             })
-            currentTween:Play()
-            isZoomed = false
+            PLU_currentTween:Play()
+            PLU_isZoomed = false
         end
     end
 end)
 
-local mainFrame = Instance.new("Frame", gui)
-mainFrame.Size = UDim2.new(0, 260, 0, 140)
-mainFrame.Position = UDim2.new(0.5, -130, 0.5, -70)
-mainFrame.BackgroundColor3 = BROWN_BG
-mainFrame.Active = true
-mainFrame.Draggable = true
-local frameCorner = Instance.new("UICorner", mainFrame)
-frameCorner.CornerRadius = UDim.new(0, 10)
-local frameStroke = Instance.new("UIStroke", mainFrame)
-frameStroke.Thickness = 2
-frameStroke.Color = BROWN_BORDER
+local PLU_mainFrame = Instance.new("Frame", PLU_gui)
+PLU_mainFrame.Size = UDim2.new(0, 260, 0, 140)
+PLU_mainFrame.Position = UDim2.new(0.5, -130, 0.5, -70)
+PLU_mainFrame.BackgroundColor3 = PLU_BROWN_BG
+PLU_mainFrame.Active = true
+PLU_mainFrame.Draggable = true
+local PLU_frameCorner = Instance.new("UICorner", PLU_mainFrame)
+PLU_frameCorner.CornerRadius = UDim.new(0, 10)
+local PLU_frameStroke = Instance.new("UIStroke", PLU_mainFrame)
+PLU_frameStroke.Thickness = 2
+PLU_frameStroke.Color = PLU_BROWN_BORDER
 
-local brownTexture = Instance.new("ImageLabel", mainFrame)
-brownTexture.Size = UDim2.new(1, 0, 1, 0)
-brownTexture.Position = UDim2.new(0, 0, 0, 0)
-brownTexture.BackgroundTransparency = 1
-brownTexture.Image = TILE_IMAGE
-brownTexture.ImageTransparency = 0
-brownTexture.ScaleType = Enum.ScaleType.Tile
-brownTexture.TileSize = UDim2.new(0, 96, 0, 96)
-brownTexture.ZIndex = 1
+local PLU_brownTexture = Instance.new("ImageLabel", PLU_mainFrame)
+PLU_brownTexture.Size = UDim2.new(1, 0, 1, 0)
+PLU_brownTexture.Position = UDim2.new(0, 0, 0, 0)
+PLU_brownTexture.BackgroundTransparency = 1
+PLU_brownTexture.Image = PLU_TILE_IMAGE
+PLU_brownTexture.ImageTransparency = 0
+PLU_brownTexture.ScaleType = Enum.ScaleType.Tile
+PLU_brownTexture.TileSize = UDim2.new(0, 96, 0, 96)
+PLU_brownTexture.ZIndex = 1
 
-local topBar = Instance.new("Frame", mainFrame)
-topBar.Size = UDim2.new(1, 0, 0, 32)
-topBar.BackgroundColor3 = ACCENT_GREEN
-topBar.BorderSizePixel = 0
-local topBarCorner = Instance.new("UICorner", topBar)
-topBarCorner.CornerRadius = UDim.new(0, 10)
+local PLU_topBar = Instance.new("Frame", PLU_mainFrame)
+PLU_topBar.Size = UDim2.new(1, 0, 0, 32)
+PLU_topBar.BackgroundColor3 = PLU_ACCENT_GREEN
+PLU_topBar.BorderSizePixel = 0
+local PLU_topBarCorner = Instance.new("UICorner", PLU_topBar)
+PLU_topBarCorner.CornerRadius = UDim.new(0, 10)
 
-local greenTexture = Instance.new("ImageLabel", topBar)
-greenTexture.Size = UDim2.new(1, 0, 1, 0)
-greenTexture.Position = UDim2.new(0, 0, 0, 0)
-greenTexture.BackgroundTransparency = 1
-greenTexture.Image = TILE_IMAGE
-greenTexture.ImageTransparency = 0
-greenTexture.ScaleType = Enum.ScaleType.Tile
-greenTexture.TileSize = UDim2.new(0, 96, 0, 96)
-greenTexture.ZIndex = 2
+local PLU_greenTexture = Instance.new("ImageLabel", PLU_topBar)
+PLU_greenTexture.Size = UDim2.new(1, 0, 1, 0)
+PLU_greenTexture.Position = UDim2.new(0, 0, 0, 0)
+PLU_greenTexture.BackgroundTransparency = 1
+PLU_greenTexture.Image = PLU_TILE_IMAGE
+PLU_greenTexture.ImageTransparency = 0
+PLU_greenTexture.ScaleType = Enum.ScaleType.Tile
+PLU_greenTexture.TileSize = UDim2.new(0, 96, 0, 96)
+PLU_greenTexture.ZIndex = 2
 
-local topLabel = Instance.new("TextLabel", topBar)
-topLabel.Size = UDim2.new(1, -64, 1, 0)
-topLabel.Position = UDim2.new(0, 12, 0, 0)
-topLabel.BackgroundTransparency = 1
-topLabel.Text = "🌱 Level Up Your Pets"
-topLabel.Font = FONT
-topLabel.TextColor3 = Color3.new(1, 1, 1)
-topLabel.TextStrokeTransparency = 0
-topLabel.TextScaled = true
-topLabel.TextXAlignment = Enum.TextXAlignment.Left
-topLabel.ZIndex = 10
+local PLU_topLabel = Instance.new("TextLabel", PLU_topBar)
+PLU_topLabel.Size = UDim2.new(1, -64, 1, 0)
+PLU_topLabel.Position = UDim2.new(0, 12, 0, 0)
+PLU_topLabel.BackgroundTransparency = 1
+PLU_topLabel.Text = "🌱 Level Up Your Pets"
+PLU_topLabel.Font = PLU_FONT
+PLU_topLabel.TextColor3 = Color3.new(1, 1, 1)
+PLU_topLabel.TextStrokeTransparency = 0
+PLU_topLabel.TextScaled = true
+PLU_topLabel.TextXAlignment = Enum.TextXAlignment.Left
+PLU_topLabel.ZIndex = 10
 
-local infoBtn = Instance.new("TextButton", topBar)
-infoBtn.Size = UDim2.new(0, 18, 0, 18)
-infoBtn.Position = UDim2.new(1, -50, 0.5, -9)
-infoBtn.BackgroundColor3 = BUTTON_GRAY
-infoBtn.Text = "?"
-infoBtn.Font = FONT
-infoBtn.TextColor3 = Color3.fromRGB(65, 65, 65)
-infoBtn.TextScaled = true
-infoBtn.TextStrokeTransparency = 0.1
-infoBtn.ZIndex = 11
-local infoStroke = Instance.new("UIStroke", infoBtn)
-infoStroke.Color = Color3.fromRGB(120,120,120)
-infoStroke.Thickness = 1
-infoBtn.MouseEnter:Connect(function() infoBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220) end)
-infoBtn.MouseLeave:Connect(function() infoBtn.BackgroundColor3 = BUTTON_GRAY end)
+local PLU_infoBtn = Instance.new("TextButton", PLU_topBar)
+PLU_infoBtn.Size = UDim2.new(0, 18, 0, 18)
+PLU_infoBtn.Position = UDim2.new(1, -50, 0.5, -9)
+PLU_infoBtn.BackgroundColor3 = PLU_BUTTON_GRAY
+PLU_infoBtn.Text = "?"
+PLU_infoBtn.Font = PLU_FONT
+PLU_infoBtn.TextColor3 = Color3.fromRGB(65, 65, 65)
+PLU_infoBtn.TextScaled = true
+PLU_infoBtn.TextStrokeTransparency = 0.1
+PLU_infoBtn.ZIndex = 11
+local PLU_infoStroke = Instance.new("UIStroke", PLU_infoBtn)
+PLU_infoStroke.Color = Color3.fromRGB(120,120,120)
+PLU_infoStroke.Thickness = 1
+PLU_infoBtn.MouseEnter:Connect(function() PLU_infoBtn.BackgroundColor3 = Color3.fromRGB(220, 220, 220) end)
+PLU_infoBtn.MouseLeave:Connect(function() PLU_infoBtn.BackgroundColor3 = PLU_BUTTON_GRAY end)
 
-local closeBtn = Instance.new("TextButton", topBar)
-closeBtn.Size = UDim2.new(0, 18, 0, 18)
-closeBtn.Position = UDim2.new(1, -25, 0.5, -9)
-closeBtn.BackgroundColor3 = BUTTON_RED
-closeBtn.Text = "X"
-closeBtn.Font = FONT
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.TextScaled = true
-closeBtn.TextStrokeTransparency = 0.3
-closeBtn.ZIndex = 11
-local closeStroke = Instance.new("UIStroke", closeBtn)
-closeStroke.Color = Color3.fromRGB(107, 0, 0)
-closeStroke.Thickness = 1
-closeBtn.MouseEnter:Connect(function() closeBtn.BackgroundColor3 = BROWN_LIGHT end)
-closeBtn.MouseLeave:Connect(function() closeBtn.BackgroundColor3 = BUTTON_RED end)
-closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
+local PLU_closeBtn = Instance.new("TextButton", PLU_topBar)
+PLU_closeBtn.Size = UDim2.new(0, 18, 0, 18)
+PLU_closeBtn.Position = UDim2.new(1, -25, 0.5, -9)
+PLU_closeBtn.BackgroundColor3 = PLU_BUTTON_RED
+PLU_closeBtn.Text = "X"
+PLU_closeBtn.Font = PLU_FONT
+PLU_closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+PLU_closeBtn.TextScaled = true
+PLU_closeBtn.TextStrokeTransparency = 0.3
+PLU_closeBtn.ZIndex = 11
+local PLU_closeStroke = Instance.new("UIStroke", PLU_closeBtn)
+PLU_closeStroke.Color = Color3.fromRGB(107, 0, 0)
+PLU_closeStroke.Thickness = 1
+PLU_closeBtn.MouseEnter:Connect(function() PLU_closeBtn.BackgroundColor3 = PLU_BROWN_LIGHT end)
+PLU_closeBtn.MouseLeave:Connect(function() PLU_closeBtn.BackgroundColor3 = PLU_BUTTON_RED end)
+PLU_closeBtn.MouseButton1Click:Connect(function() PLU_gui:Destroy() end)
 
-local contentFrame = Instance.new("Frame", mainFrame)
-contentFrame.Name = "ContentFrame"
-contentFrame.Size = UDim2.new(1, -8, 1, -38)
-contentFrame.Position = UDim2.new(0, 4, 0, 36)
-contentFrame.BackgroundTransparency = 1
-contentFrame.ZIndex = 2
+local PLU_contentFrame = Instance.new("Frame", PLU_mainFrame)
+PLU_contentFrame.Name = "ContentFrame"
+PLU_contentFrame.Size = UDim2.new(1, -8, 1, -38)
+PLU_contentFrame.Position = UDim2.new(0, 4, 0, 36)
+PLU_contentFrame.BackgroundTransparency = 1
+PLU_contentFrame.ZIndex = 2
 
-local notificationLabel = Instance.new("TextLabel", contentFrame)
-notificationLabel.Name = "NotificationLabel"
-notificationLabel.Size = UDim2.new(0.92, 0, 0, 20)
-notificationLabel.Position = UDim2.new(0.04, 0, 0, 0)
-notificationLabel.BackgroundTransparency = 1
-notificationLabel.Font = FONT
-notificationLabel.Text = ""
-notificationLabel.TextColor3 = Color3.fromRGB(255,100,100)
-notificationLabel.TextStrokeTransparency = 0.3
-notificationLabel.TextScaled = true
-notificationLabel.TextXAlignment = Enum.TextXAlignment.Center
-notificationLabel.ZIndex = 5
+local PLU_notificationLabel = Instance.new("TextLabel", PLU_contentFrame)
+PLU_notificationLabel.Name = "NotificationLabel"
+PLU_notificationLabel.Size = UDim2.new(0.92, 0, 0, 20)
+PLU_notificationLabel.Position = UDim2.new(0.04, 0, 0, 0)
+PLU_notificationLabel.BackgroundTransparency = 1
+PLU_notificationLabel.Font = PLU_FONT
+PLU_notificationLabel.Text = ""
+PLU_notificationLabel.TextColor3 = Color3.fromRGB(255,100,100)
+PLU_notificationLabel.TextStrokeTransparency = 0.3
+PLU_notificationLabel.TextScaled = true
+PLU_notificationLabel.TextXAlignment = Enum.TextXAlignment.Center
+PLU_notificationLabel.ZIndex = 5
 
--- Age Notification Popup
-local function showAgeNotification(age)
-    local notif = Instance.new("TextLabel", mainFrame)
+local function PLU_showAgeNotification(age)
+    local notif = Instance.new("TextLabel", PLU_mainFrame)
     notif.Size = UDim2.new(0, 120, 0, 36)
     notif.Position = UDim2.new(0.5, -60, 0, 60)
     notif.BackgroundTransparency = 0.12
-    notif.BackgroundColor3 = ACCENT_GREEN
+    notif.BackgroundColor3 = PLU_ACCENT_GREEN
     notif.Text = "+1 Age! ("..tostring(age)..")"
-    notif.Font = FONT
+    notif.Font = PLU_FONT
     notif.TextColor3 = Color3.fromRGB(255,255,255)
     notif.TextStrokeTransparency = 0.12
     notif.TextScaled = true
@@ -189,21 +191,20 @@ local function showAgeNotification(age)
     notifStroke.Thickness = 1
     spawn(function()
         wait(1.1)
-        local t = TweenService:Create(notif, TweenInfo.new(0.6), {TextTransparency=1, BackgroundTransparency=1, TextStrokeTransparency=1})
+        local t = PLU_TweenService:Create(notif, TweenInfo.new(0.6), {TextTransparency=1, BackgroundTransparency=1, TextStrokeTransparency=1})
         t:Play()
         t.Completed:Wait()
         notif:Destroy()
     end)
 end
 
--- Styled button
-local function makeStyledButton(parent, text, yPos, color, hover)
+local function PLU_makeStyledButton(parent, text, yPos, color, hover)
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(0.9, 0, 0, 28)
     btn.Position = UDim2.new(0.05, 0, 0, yPos)
     btn.BackgroundColor3 = color
     btn.Text = text
-    btn.Font = FONT
+    btn.Font = PLU_FONT
     btn.TextColor3 = Color3.new(1,1,1)
     btn.TextScaled = true
     btn.TextStrokeTransparency = 0.25
@@ -211,37 +212,36 @@ local function makeStyledButton(parent, text, yPos, color, hover)
     local btnCorner = Instance.new("UICorner", btn)
     btnCorner.CornerRadius = UDim.new(0, 7)
     local btnStroke = Instance.new("UIStroke", btn)
-    btnStroke.Color = BROWN_BORDER
+    btnStroke.Color = PLU_BROWN_BORDER
     btnStroke.Thickness = 1
     btn.MouseEnter:Connect(function() btn.BackgroundColor3 = hover end)
     btn.MouseLeave:Connect(function() btn.BackgroundColor3 = color end)
     return btn
 end
 
-local levelUpBtn = makeStyledButton(contentFrame, "Level Up 50 Instantly", 26, BUTTON_GREEN, BUTTON_GREEN_HOVER)
+local PLU_levelUpBtn = PLU_makeStyledButton(PLU_contentFrame, "Level Up 50 Instantly", 26, PLU_BUTTON_GREEN, PLU_BUTTON_GREEN_HOVER)
 
-local credit = Instance.new("TextLabel", contentFrame)
-credit.Name = "Credit"
-credit.Size = UDim2.new(1, -10, 0, 16)
-credit.Position = UDim2.new(0, 5, 1, -18)
-credit.BackgroundTransparency = 1
-credit.Text = "Remade by @Zeo"
-credit.TextScaled = true
-credit.Font = FONT
-credit.TextColor3 = Color3.fromRGB(255, 255, 255)
-credit.TextTransparency = 0.3
-credit.TextStrokeTransparency = 0.8
+local PLU_credit = Instance.new("TextLabel", PLU_contentFrame)
+PLU_credit.Name = "Credit"
+PLU_credit.Size = UDim2.new(1, -10, 0, 16)
+PLU_credit.Position = UDim2.new(0, 5, 1, -18)
+PLU_credit.BackgroundTransparency = 1
+PLU_credit.Text = "Remade by @Zeo"
+PLU_credit.TextScaled = true
+PLU_credit.Font = PLU_FONT
+PLU_credit.TextColor3 = Color3.fromRGB(255, 255, 255)
+PLU_credit.TextTransparency = 0.3
+PLU_credit.TextStrokeTransparency = 0.8
 
--- Mini Loading Modal (Brown Style)
-local function miniLoading(customText, callback)
-    local miniGui = Instance.new("ScreenGui", gui)
-    miniGui.Name = "MiniLoading"
+local function PLU_miniLoading(customText, callback)
+    local miniGui = Instance.new("ScreenGui", PLU_gui)
+    miniGui.Name = "MiniLoading_"..tostring(math.random(100000,999999))
     miniGui.IgnoreGuiInset = true
 
     local miniFrame = Instance.new("Frame", miniGui)
     miniFrame.Size = UDim2.new(0, 240, 0, 80)
     miniFrame.Position = UDim2.new(0.5, -120, 0.5, -40)
-    miniFrame.BackgroundColor3 = BROWN_BG
+    miniFrame.BackgroundColor3 = PLU_BROWN_BG
     miniFrame.BackgroundTransparency = 0
     miniFrame.BorderSizePixel = 0
     miniFrame.Visible = true
@@ -250,13 +250,13 @@ local function miniLoading(customText, callback)
     miniCorner.CornerRadius = UDim.new(0, 10)
     local frameStroke = Instance.new("UIStroke", miniFrame)
     frameStroke.Thickness = 2
-    frameStroke.Color = BROWN_BORDER
+    frameStroke.Color = PLU_BROWN_BORDER
 
     local brownTexture = Instance.new("ImageLabel", miniFrame)
     brownTexture.Size = UDim2.new(1, 0, 1, 0)
     brownTexture.Position = UDim2.new(0, 0, 0, 0)
     brownTexture.BackgroundTransparency = 1
-    brownTexture.Image = TILE_IMAGE
+    brownTexture.Image = PLU_TILE_IMAGE
     brownTexture.ImageTransparency = 0
     brownTexture.ScaleType = Enum.ScaleType.Tile
     brownTexture.TileSize = UDim2.new(0, 96, 0, 96)
@@ -265,7 +265,7 @@ local function miniLoading(customText, callback)
     local topBar = Instance.new("Frame", miniFrame)
     topBar.Size = UDim2.new(1, 0, 0, 22)
     topBar.Position = UDim2.new(0, 0, 0, 0)
-    topBar.BackgroundColor3 = ACCENT_GREEN
+    topBar.BackgroundColor3 = PLU_ACCENT_GREEN
     topBar.ZIndex = 5
     local topBarCorner = Instance.new("UICorner", topBar)
     topBarCorner.CornerRadius = UDim.new(0, 10)
@@ -274,7 +274,7 @@ local function miniLoading(customText, callback)
     greenTexture.Size = UDim2.new(1, 0, 1, 0)
     greenTexture.Position = UDim2.new(0, 0, 0, 0)
     greenTexture.BackgroundTransparency = 1
-    greenTexture.Image = TILE_IMAGE
+    greenTexture.Image = PLU_TILE_IMAGE
     greenTexture.ImageTransparency = 0
     greenTexture.ScaleType = Enum.ScaleType.Tile
     greenTexture.TileSize = UDim2.new(0, 96, 0, 96)
@@ -285,7 +285,7 @@ local function miniLoading(customText, callback)
     topLabel.Position = UDim2.new(0, 6, 0, 0)
     topLabel.BackgroundTransparency = 1
     topLabel.Text = "Pet Leveling"
-    topLabel.Font = FONT
+    topLabel.Font = PLU_FONT
     topLabel.TextColor3 = Color3.new(1, 1, 1)
     topLabel.TextStrokeTransparency = 0
     topLabel.TextScaled = true
@@ -296,7 +296,7 @@ local function miniLoading(customText, callback)
     progress.Size = UDim2.new(1, -24, 0, 28)
     progress.Position = UDim2.new(0, 12, 0, 26)
     progress.BackgroundTransparency = 1
-    progress.Font = FONT
+    progress.Font = PLU_FONT
     progress.TextColor3 = Color3.fromRGB(255, 255, 255)
     progress.TextStrokeTransparency = 0.2
     progress.Text = customText or "Pets Level Up! 0%"
@@ -307,17 +307,17 @@ local function miniLoading(customText, callback)
     local barBG = Instance.new("Frame", miniFrame)
     barBG.Size = UDim2.new(0.8, 0, 0, 16)
     barBG.Position = UDim2.new(0.1, 0, 1, -24)
-    barBG.BackgroundColor3 = BROWN_LIGHT
+    barBG.BackgroundColor3 = PLU_BROWN_LIGHT
     barBG.BorderSizePixel = 0
     barBG.ZIndex = 3
     local barBGCorner = Instance.new("UICorner", barBG)
     barBGCorner.CornerRadius = UDim.new(0, 6)
     local barBGStroke = Instance.new("UIStroke", barBG)
-    barBGStroke.Color = BROWN_BORDER
+    barBGStroke.Color = PLU_BROWN_BORDER
     barBGStroke.Thickness = 1
 
     local barFill = Instance.new("Frame", barBG)
-    barFill.BackgroundColor3 = ACCENT_GREEN
+    barFill.BackgroundColor3 = PLU_ACCENT_GREEN
     barFill.Size = UDim2.new(0,0,1,0)
     barFill.ZIndex = 4
     local barFillCorner = Instance.new("UICorner", barFill)
@@ -335,32 +335,32 @@ local function miniLoading(customText, callback)
     end)
 end
 
-local function showInfoModal()
-    if gui:FindFirstChild("InfoModal") then return end
-    local blur = Instance.new("BlurEffect", Lighting)
+local function PLU_showInfoModal()
+    if PLU_gui:FindFirstChild("InfoModal") then return end
+    local blur = Instance.new("BlurEffect", PLU_Lighting)
     blur.Size = 16
     blur.Name = "ModalBlur"
 
-    if camera and not isZoomed then
-        if currentTween then currentTween:Cancel() end
-        currentTween = TweenService:Create(camera, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            FieldOfView = zoomFOV
+    if PLU_camera and not PLU_isZoomed then
+        if PLU_currentTween then PLU_currentTween:Cancel() end
+        PLU_currentTween = PLU_TweenService:Create(PLU_camera, TweenInfo.new(PLU_tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            FieldOfView = PLU_zoomFOV
         })
-        currentTween:Play()
-        isZoomed = true
+        PLU_currentTween:Play()
+        PLU_isZoomed = true
     end
 
-    local modal = Instance.new("Frame", gui)
+    local modal = Instance.new("Frame", PLU_gui)
     modal.Name = "InfoModal"
     modal.Size = UDim2.new(0, 220, 0, 110)
     modal.Position = UDim2.new(0.5, -110, 0.5, -55)
-    modal.BackgroundColor3 = BROWN_LIGHT
+    modal.BackgroundColor3 = PLU_BROWN_LIGHT
     modal.Active = true
     modal.ZIndex = 30
     local modalCorner = Instance.new("UICorner", modal)
     modalCorner.CornerRadius = UDim.new(0, 8)
     local modalStroke = Instance.new("UIStroke", modal)
-    modalStroke.Color = BROWN_BORDER
+    modalStroke.Color = PLU_BROWN_BORDER
     modalStroke.Thickness = 2
 
     local modalTexture = Instance.new("ImageLabel", modal)
@@ -368,7 +368,7 @@ local function showInfoModal()
     modalTexture.Size = UDim2.new(1, 0, 1, 0)
     modalTexture.Position = UDim2.new(0, 0, 0, 0)
     modalTexture.BackgroundTransparency = 1
-    modalTexture.Image = TILE_IMAGE
+    modalTexture.Image = PLU_TILE_IMAGE
     modalTexture.ImageTransparency = 0
     modalTexture.ScaleType = Enum.ScaleType.Tile
     modalTexture.TileSize = UDim2.new(0, 96, 0, 96)
@@ -377,7 +377,7 @@ local function showInfoModal()
     local textTile = Instance.new("Frame", modal)
     textTile.Size = UDim2.new(1, 0, 0, 18)
     textTile.Position = UDim2.new(0, 0, 0, 0)
-    textTile.BackgroundColor3 = ACCENT_GREEN
+    textTile.BackgroundColor3 = PLU_ACCENT_GREEN
     textTile.ZIndex = 32
     local textTileCorner = Instance.new("UICorner", textTile)
     textTileCorner.CornerRadius = UDim.new(0, 8)
@@ -388,7 +388,7 @@ local function showInfoModal()
     textTileLabel.BackgroundTransparency = 1
     textTileLabel.Text = "Disclaimer!"
     textTileLabel.TextColor3 = Color3.fromRGB(255,255,255)
-    textTileLabel.Font = FONT
+    textTileLabel.Font = PLU_FONT
     textTileLabel.TextScaled = true
     textTileLabel.ZIndex = 33
     textTileLabel.TextStrokeTransparency = 0
@@ -396,27 +396,27 @@ local function showInfoModal()
     local closeBtn2 = Instance.new("TextButton", textTile)
     closeBtn2.Size = UDim2.new(0, 16, 0, 16)
     closeBtn2.Position = UDim2.new(1, -18, 0, 1)
-    closeBtn2.BackgroundColor3 = BUTTON_RED
+    closeBtn2.BackgroundColor3 = PLU_BUTTON_RED
     closeBtn2.TextColor3 = Color3.fromRGB(255, 255, 255)
     closeBtn2.Text = "✖"
     closeBtn2.TextScaled = true
-    closeBtn2.Font = FONT
+    closeBtn2.Font = PLU_FONT
     closeBtn2.ZIndex = 34
     local closeStroke2 = Instance.new("UIStroke", closeBtn2)
     closeStroke2.Color = Color3.fromRGB(107, 0, 0)
     closeStroke2.Thickness = 2
     closeBtn2.MouseEnter:Connect(function() closeBtn2.BackgroundColor3 = Color3.fromRGB(200, 62, 62) end)
-    closeBtn2.MouseLeave:Connect(function() closeBtn2.BackgroundColor3 = BUTTON_RED end)
+    closeBtn2.MouseLeave:Connect(function() closeBtn2.BackgroundColor3 = PLU_BUTTON_RED end)
     closeBtn2.MouseButton1Click:Connect(function()
         if blur then blur:Destroy() end
         if modal then modal:Destroy() end
-        if camera and isZoomed then
-            if currentTween then currentTween:Cancel() end
-            currentTween = TweenService:Create(camera, TweenInfo.new(tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                FieldOfView = originalFOV
+        if PLU_camera and PLU_isZoomed then
+            if PLU_currentTween then PLU_currentTween:Cancel() end
+            PLU_currentTween = PLU_TweenService:Create(PLU_camera, TweenInfo.new(PLU_tweenTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                FieldOfView = PLU_originalFOV
             })
-            currentTween:Play()
-            isZoomed = false
+            PLU_currentTween:Play()
+            PLU_isZoomed = false
         end
     end)
 
@@ -442,29 +442,29 @@ local function showInfoModal()
     infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     infoLabel.Text = "Do not report this bug on discord.gg/growagarden!\nMade by @Zeo"
     infoLabel.TextWrapped = true
-    infoLabel.Font = FONT
+    infoLabel.Font = PLU_FONT
     infoLabel.TextScaled = true
     infoLabel.ZIndex = 31
     infoLabel.TextStrokeTransparency = 0.5
 end
 
-infoBtn.MouseButton1Click:Connect(showInfoModal)
+PLU_infoBtn.MouseButton1Click:Connect(PLU_showInfoModal)
 
-levelUpBtn.MouseButton1Click:Connect(function()
-    local char = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+PLU_levelUpBtn.MouseButton1Click:Connect(function()
+    local char = PLU_localPlayer.Character or PLU_localPlayer.CharacterAdded:Wait()
     if not char then
-        notificationLabel.Text = "Error: Character not loaded"
+        PLU_notificationLabel.Text = "Error: Character not loaded"
         wait(3)
-        notificationLabel.Text = ""
+        PLU_notificationLabel.Text = ""
         return
     end
 
     local tool = char:FindFirstChildOfClass("Tool")
     if tool then
-        local isValidPet = toolIsValidPet(tool)
+        local isValidPet = PLU_toolIsValidPet(tool)
         if isValidPet then
-            notificationLabel.Text = ""
-            mainFrame.Visible = false
+            PLU_notificationLabel.Text = ""
+            PLU_mainFrame.Visible = false
 
             local currentWeight = 0
             local currentAge = 0
@@ -478,27 +478,27 @@ levelUpBtn.MouseButton1Click:Connect(function()
 
             local function doNextAge(age)
                 if age > 50 then
-                    mainFrame.Visible = true
-                    notificationLabel.Text = "Pet leveled up to Age 50!"
+                    PLU_mainFrame.Visible = true
+                    PLU_notificationLabel.Text = "Pet leveled up to Age 50!"
                     wait(2)
-                    notificationLabel.Text = ""
+                    PLU_notificationLabel.Text = ""
                     return
                 end
-                miniLoading("Leveling Up Age: " .. age, function()
+                PLU_miniLoading("Leveling Up Age: " .. age, function()
                     tool.Name = basePetName .. " [" .. newWeight .. " KG] [Age " .. age .. "]"
-                    showAgeNotification(age)
+                    PLU_showAgeNotification(age)
                     doNextAge(age + 1)
                 end)
             end
             doNextAge(currentAge + 1)
         else
-            notificationLabel.Text = "Please equip a valid pet"
+            PLU_notificationLabel.Text = "Please equip a valid pet"
             wait(3)
-            notificationLabel.Text = ""
+            PLU_notificationLabel.Text = ""
         end
     else
-        notificationLabel.Text = "Please equip a valid pet"
+        PLU_notificationLabel.Text = "Please equip a valid pet"
         wait(3)
-        notificationLabel.Text = ""
+        PLU_notificationLabel.Text = ""
     end
 end)
