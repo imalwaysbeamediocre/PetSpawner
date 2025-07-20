@@ -441,7 +441,7 @@ local function showInfoModal()
     infoLabel.Position = UDim2.new(0, 0, 0, 0)
     infoLabel.BackgroundTransparency = 1
     infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    infoLabel.Text = "Do not report this bug on discord.gg/growagarden!\nMade by @Zeo"
+    infoLabel.Text = "This only works on divine pets\nDo not report this bug on discord.gg/growagarden!\nMade by @Zeo"
     infoLabel.TextWrapped = true
     infoLabel.Font = FONT
     infoLabel.TextScaled = true
