@@ -23,6 +23,7 @@ local TILE_IMAGE = "rbxassetid://15910695828"
 
 local validPets = {
     "raccoon",
+    "kitsune",
     "t[%s%-]*rex",
     "fennec[%s%-]*fox",
     "dragonfly",
